@@ -1,0 +1,33 @@
+{
+	"name": "npsze",
+	"version": "0.0.0",
+	"description": "Get npm package size",
+	"keywords": [],
+	"repository": "https://github.com/hyperz111/npsze.git",
+	"license": "MIT",
+	"author": "Hyper-Z11 (https://github.com/hyperz111)",
+	"sideEffects": false,
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"format": "prettier -w .",
+		"prepublishOnly": "pnpm run build",
+		"types": "tsc --noEmit"
+	},
+	"devDependencies": {
+		"@hyperz111/prettier-config": "^1",
+		"@hyperz111/tsconfig": "^1",
+		"prettier": "^3",
+		"typescript": "^6"
+	},
+	"packageManager": "pnpm@10.15.0"
+}
