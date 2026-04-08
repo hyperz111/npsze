@@ -7,6 +7,13 @@ settings:
 importers:
 
   .:
+    dependencies:
+      picospinner:
+        specifier: ^3.0.0
+        version: 3.0.0
+      semver:
+        specifier: ^7.7.4
+        version: 7.7.4
     devDependencies:
       '@hyperz111/prettier-config':
         specifier: ^1
@@ -124,6 +131,10 @@ packages:
   picomatch@4.0.4:
     resolution: {integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==}
     engines: {node: '>=12'}
+
+  picospinner@3.0.0:
+    resolution: {integrity: sha512-lGA1TNsmy2bxvRsTI2cV01kfTwKzZjnZSDmF9llYNyMHMrU4sP87lQ5taiIKm88L3cbswjl008nwyGc3WpNvzg==}
+    engines: {node: '>=18.0.0'}
 
   prettier-plugin-packagejson@3.0.2:
     resolution: {integrity: sha512-kmoj3hEynXwoHDo8ZhmWAIjRBoQWCDUVackiWfSDWdgD0rS3LGB61T9zoVbume/cotYdCoadUh4sqViAmXvpBQ==}
@@ -254,6 +265,8 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.5
 
   picomatch@4.0.4: {}
+
+  picospinner@3.0.0: {}
 
   prettier-plugin-packagejson@3.0.2(prettier@3.8.1):
     dependencies:

@@ -23,6 +23,10 @@
 		"prepublishOnly": "pnpm run build",
 		"types": "tsc --noEmit"
 	},
+	"dependencies": {
+		"picospinner": "^3.0.0",
+		"semver": "^7.7.4"
+	},
 	"devDependencies": {
 		"@hyperz111/prettier-config": "^1",
 		"@hyperz111/tsconfig": "^1",
