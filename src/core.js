@@ -42,14 +42,22 @@ const fetchPackage = async (name, version) => {
 export const getPackageSize = async (name, version = "latest") => {
 	let install = 0;
 	let unpacked = 0;
+	/** @type {Set<string>} */
+	const seen = new Set();
 
 	const recursive = async (name, version, top) => {
 		const data = await fetchPackage(name, version);
+		const namespace = `${data.name}@${data.version}`;
+		if (seen.has(namespace)) {
+			return;
+		}
+
 		let size = data.dist.unpackedSize;
 
 		if (size === undefined) {
 			const tarball = await fetch(data.dist.tarball).then((res) => res.arrayBuffer());
 			size = tarball.byteLength;
+			data.dist.unpackedSize = size;
 		}
 
 		if (top) {
@@ -57,6 +65,8 @@ export const getPackageSize = async (name, version = "latest") => {
 		}
 
 		install += size;
+
+		seen.add(namespace);
 
 		if ("dependencies" in data && Object.keys(data.dependencies).length > 0) {
 			for (const dependency in data.dependencies) {
