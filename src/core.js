@@ -6,7 +6,7 @@ const cache = new Map();
 /**
  * @param {string} name
  * @param {string} version
- * @return {any}
+ * @return {Promise<any>}
  */
 const fetchPackage = async (name, version) => {
 	try {
@@ -37,7 +37,7 @@ const fetchPackage = async (name, version) => {
 /**
  * @param {string} name
  * @param {string} [version="latest"]
- * @returns {{ unpacked: number, install: number }}
+ * @returns {Promise<{ unpacked: number, install: number }>}
  */
 export const getPackageSize = async (name, version = "latest") => {
 	let install = 0;
@@ -45,7 +45,6 @@ export const getPackageSize = async (name, version = "latest") => {
 
 	const recursive = async (name, version, top) => {
 		const data = await fetchPackage(name, version);
-		console.log(data);
 		let size = data.dist.unpackedSize;
 
 		if (size === undefined) {
@@ -59,7 +58,7 @@ export const getPackageSize = async (name, version = "latest") => {
 
 		install += size;
 
-		if (Object.keys(data.dependencies ?? {}).length > 0) {
+		if ("dependencies" in data && Object.keys(data.dependencies).length > 0) {
 			for (const dependency in data.dependencies) {
 				await recursive(dependency, data.dependencies[dependency], false);
 			}
