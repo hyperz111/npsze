@@ -1,4 +1,5 @@
 import semverMaxSatisfying from "semver/ranges/max-satisfying.js";
+import { gunzip } from "node:zlib";
 
 /** @type {Map<string, any>} */
 const cache = new Map();
@@ -55,7 +56,11 @@ export const getPackageSize = async (name, version = "latest") => {
 		let size = data.dist.unpackedSize;
 
 		if (size === undefined) {
-			const tarball = await fetch(data.dist.tarball).then((res) => res.arrayBuffer());
+			const tarball = await fetch(data.dist.tarball)
+				.then((res) => res.arrayBuffer())
+				.then((buffer) =>
+					new Promise((res, rej) => gunzip(buffer, (error, result) => (error ? rej(error) : res(result))))(),
+				);
 			size = tarball.byteLength;
 			data.dist.unpackedSize = size;
 		}
