@@ -37,7 +37,7 @@ const fetchPackage = async (name, version) => {
 /**
  * @param {string} name
  * @param {string} [version="latest"]
- * @returns {Promise<{ unpacked: number, install: number }>}
+ * @returns {Promise<{ name: string, version: string, unpacked: number, install: number }>}
  */
 export const getPackageSize = async (name, version = "latest") => {
 	let install = 0;
@@ -45,8 +45,8 @@ export const getPackageSize = async (name, version = "latest") => {
 	/** @type {Set<string>} */
 	const seen = new Set();
 
-	const recursive = async (name, version, top) => {
-		const data = await fetchPackage(name, version);
+	const recursive = async (n, v, top) => {
+		const data = await fetchPackage(n, v);
 		const namespace = `${data.name}@${data.version}`;
 		if (seen.has(namespace)) {
 			return;
@@ -62,6 +62,7 @@ export const getPackageSize = async (name, version = "latest") => {
 
 		if (top) {
 			unpacked += size;
+			version = data.version;
 		}
 
 		install += size;
@@ -73,9 +74,17 @@ export const getPackageSize = async (name, version = "latest") => {
 				await recursive(dependency, data.dependencies[dependency], false);
 			}
 		}
+
+		if ("peerDependencies" in data && Object.keys(data.peerDependencies).length > 0) {
+			for (const dependency in data.peerDependencies) {
+				if (data.peerDependenciesMeta?.[dependency]?.optional !== true) {
+					await recursive(dependency, data.peerDependencies[dependency], false);
+				}
+			}
+		}
 	};
 
 	await recursive(name, version, true);
 
-	return { unpacked, install };
+	return { name, version, unpacked, install };
 };
