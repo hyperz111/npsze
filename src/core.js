@@ -2,44 +2,86 @@ import semverMaxSatisfying from "semver/ranges/max-satisfying.js";
 import { gunzip } from "node:zlib";
 import { promisify } from "node:util";
 
-/** @type {Map<string, any>} */
-const cache = new Map();
+/**
+ * @typedef {Object} FetchResult
+ * @property {string} name
+ * @property {string} version
+ * @property {number} unpacked
+ * @property {Record<string, string>} dependencies
+ * @property {string} tarball
+ */
+
+/**
+ * @typedef {Object} CacheValue
+ * @property {Record<string, string>} tags
+ * @property {Record<string, Omit<FetchResult, "name" | "version">>} versions
+ */
+
+/** @type {Map<string, CacheValue>} */
+export const cache = new Map();
 
 /**
  * @param {string} name
  * @param {string} version
- * @return {Promise<any>}
+ * @return {Promise<FetchResult>}
  */
 const fetchPackage = async (name, version) => {
 	try {
-		/** @type {any} */
-		let response;
-
-		if (cache.has(name)) {
-			response = cache.get(name);
-		} else {
-			response = await fetch(`https://registry.npmjs.org/${name}`, {
+		if (!cache.has(name)) {
+			const response = await fetch(`https://registry.npmjs.org/${name}`, {
 				headers: {
 					Accept: "application/vnd.npm.install-v1+json",
 				},
 			}).then((res) => res.json());
+
+			cache.set(name, {
+				tags: response["dist-tags"],
+				versions: Object.fromEntries(
+					Object.entries(response.versions).map(([key, value]) => {
+						const newValue = {
+							unpacked: value.dist.unpackedSize,
+							tarball: value.dist.tarball,
+							dependencies: value.dependencies ?? {},
+						};
+
+            // Add peerDependencies to dependencies
+						if (Object.keys(value.peerDependencies ?? {}).length > 0) {
+							for (const dependency in value.peerDependencies) {
+								if (value.peerDependenciesMeta?.[dependency].optional !== true) {
+									newValue.dependencies[dependency] = value.peerDependencies[dependency];
+								}
+							}
+						}
+
+						return [key, newValue];
+					}),
+				),
+			});
 		}
 
-		const selectedVersion = semverMaxSatisfying(Object.keys(response.versions), response["dist-tags"]?.[version] ?? version);
+		const data = cache.get(name);
+
+		const selectedVersion = semverMaxSatisfying(Object.keys(data.versions), data.tags[version] ?? version);
 		if (selectedVersion === null) {
 			throw new RangeError(`Cannot find version "${version}" on "${name}"`);
 		}
 
-		return response.versions[selectedVersion];
+		return {
+			name,
+			version: selectedVersion,
+			...data.versions[selectedVersion],
+		};
 	} catch (error) {
 		throw error;
 	}
 };
 
+const gunzipPromise = promisify(gunzip);
+
 /**
  * @param {string} name
  * @param {string} [version="latest"]
- * @returns {Promise<{ name: string, version: string, unpacked: number, install: number }>}
+ * @returns {Promise<Omit<FetchResult, "dependencies" | "tarball"> & { install: number }>}
  */
 export const getPackageSize = async (name, version = "latest") => {
 	let install = 0;
@@ -54,15 +96,14 @@ export const getPackageSize = async (name, version = "latest") => {
 			return;
 		}
 
-		let size = data.dist.unpackedSize;
-
-		if (size === undefined) {
-			const tarball = await fetch(data.dist.tarball)
+		if (data.unpacked === undefined) {
+			const tarball = await fetch(data.tarball)
 				.then((res) => res.arrayBuffer())
-				.then((buffer) => promisify(gunzip)(buffer));
-			size = tarball.byteLength;
-			data.dist.unpackedSize = size;
+				.then((buffer) => gunzipPromise(buffer));
+			data.unpacked = tarball.byteLength;
 		}
+
+		const size = data.unpacked;
 
 		if (top) {
 			unpacked += size;
@@ -73,18 +114,8 @@ export const getPackageSize = async (name, version = "latest") => {
 
 		seen.add(namespace);
 
-		if ("dependencies" in data && Object.keys(data.dependencies).length > 0) {
-			for (const dependency in data.dependencies) {
-				await recursive(dependency, data.dependencies[dependency], false);
-			}
-		}
-
-		if ("peerDependencies" in data && Object.keys(data.peerDependencies).length > 0) {
-			for (const dependency in data.peerDependencies) {
-				if (data.peerDependenciesMeta?.[dependency]?.optional !== true) {
-					await recursive(dependency, data.peerDependencies[dependency], false);
-				}
-			}
+		for (const dependency in data.dependencies) {
+			await recursive(dependency, data.dependencies[dependency], false);
 		}
 	};
 
