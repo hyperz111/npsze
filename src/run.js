@@ -1,5 +1,4 @@
 import { cache, getPackageSize, parsePackageName } from "./core.js";
-import { text, select, spinner } from "@clack/prompts";
 import { parseArgs } from "node:util";
 import pkg from "../package.json" with { type: "json" };
 
@@ -24,10 +23,9 @@ export const run = async (p) => {
 		if (parsed.values.help) {
 			p.stdout.write(
 				[
-					`Usage: ${pkg.name} [package] [..options]`,
+					`Usage: ${pkg.name} <package> [..options]`,
 					"",
 					`${pkg.description}.`,
-					"By default, if you don't take the `package` argument, it will enter the interactive mode.",
 					"",
 					"Options:",
 					"  -h, --help       Show program help.",
@@ -45,6 +43,10 @@ export const run = async (p) => {
 		}
 
 		packageName = parsed.positionals[0];
+
+		if (packageName === undefined) {
+			throw new TypeError("The `package` argument is must be fill");
+		}
 	} catch (error) {
 		// @ts-ignore
 		p.stderr.write(error.message ? `Error: ${error.message}` : error.stack);
@@ -52,21 +54,15 @@ export const run = async (p) => {
 		return 1;
 	}
 
-	if (packageName === undefined) {
-		return 0;
-	}
-
 	const { name, version } = parsePackageName(packageName);
-	const s = spinner();
-	s.start(`Fetching ${name}@${version}`);
 
 	try {
-		const result = await getPackageSize(name, version, s.message);
-		s.stop(`Succesfully fetch ${name}@${version}`);
+		const result = await getPackageSize(name, version, (n, v) => p.stdout.write(`Fetching ${n}@${v}\n`));
+		p.stdout.write(`Succesfully fetch ${name}@${version}\n`);
 		console.log(result);
 		return 0;
 	} catch (error) {
-		s.error(`Failed fetch ${name}@${version} with error: ${error.message}`);
+		p.stdout.write(`Failed fetch ${name}@${version} with error: ${error.message}\n`);
 		return 1;
 	}
 };

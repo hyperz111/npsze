@@ -107,7 +107,7 @@ export const getPackageSize = async (name, version, onFetch) => {
 	const seen = new Set();
 
 	const recursive = async (n, v, top) => {
-		onFetch(`Fetching ${n}@${v}`);
+		onFetch(n, v);
 
 		const data = await fetchPackage(n, v);
 		const namespace = `${data.name}@${data.version}`;
