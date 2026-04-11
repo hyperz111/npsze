@@ -17,6 +17,22 @@ import { promisify } from "node:util";
  * @property {Record<string, Omit<FetchResult, "name" | "version">>} versions
  */
 
+/**
+ * @param {string} packageName
+ * @returns {{ name: string, version: string }}
+ */
+export const parsePackageName = (packageName) => {
+	const atIndex = packageName.lastIndexOf("@");
+
+	if (atIndex > 0) {
+		const name = packageName.slice(0, atIndex);
+		const version = packageName.slice(atIndex + 1) || "latest";
+
+		return { name, version };
+	}
+	return { name: packageName, version: "latest" };
+};
+
 /** @type {Map<string, CacheValue>} */
 export const cache = new Map();
 
@@ -44,7 +60,7 @@ const fetchPackage = async (name, version) => {
 							dependencies: value.dependencies ?? {},
 						};
 
-            // Add peerDependencies to dependencies
+						// Add peerDependencies to dependencies
 						if (Object.keys(value.peerDependencies ?? {}).length > 0) {
 							for (const dependency in value.peerDependencies) {
 								if (value.peerDependenciesMeta?.[dependency].optional !== true) {
@@ -80,16 +96,19 @@ const gunzipPromise = promisify(gunzip);
 
 /**
  * @param {string} name
- * @param {string} [version="latest"]
+ * @param {string} version
+ * @param {(message: string) => void} onFetch
  * @returns {Promise<Omit<FetchResult, "dependencies" | "tarball"> & { install: number }>}
  */
-export const getPackageSize = async (name, version = "latest") => {
+export const getPackageSize = async (name, version, onFetch) => {
 	let install = 0;
 	let unpacked = 0;
 	/** @type {Set<string>} */
 	const seen = new Set();
 
 	const recursive = async (n, v, top) => {
+		onFetch(`Fetching ${n}@${v}`);
+
 		const data = await fetchPackage(n, v);
 		const namespace = `${data.name}@${data.version}`;
 		if (seen.has(namespace)) {

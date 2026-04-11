@@ -24,7 +24,7 @@
 		"types": "tsc --noEmit"
 	},
 	"dependencies": {
-		"picospinner": "^3.0.0",
+		"@clack/prompts": "^1.2.0",
 		"semver": "^7.7.4"
 	},
 	"devDependencies": {
