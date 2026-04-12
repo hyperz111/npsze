@@ -34,7 +34,7 @@ export const parsePackageName = (packageName) => {
 };
 
 /** @type {Map<string, CacheValue>} */
-export const cache = new Map();
+const cache = new Map();
 
 /**
  * @param {string} name

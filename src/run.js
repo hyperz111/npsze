@@ -1,4 +1,4 @@
-import { cache, getPackageSize, parsePackageName } from "./core.js";
+import { getPackageSize, parsePackageName } from "./core.js";
 import { parseArgs } from "node:util";
 import pkg from "../package.json" with { type: "json" };
 
