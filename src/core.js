@@ -42,44 +42,44 @@ const cache = new Map();
  * @return {Promise<FetchResult>}
  */
 const fetchPackage = async (name, version) => {
-	try {
-		if (!cache.has(name)) {
-			const response = await fetch(`https://registry.npmjs.org/${name}`, {
-				headers: {
-					Accept: "application/vnd.npm.install-v1+json",
-				},
-			}).then((res) => res.json());
+	if (!cache.has(name)) {
+		const response = await fetch(`https://registry.npmjs.org/${name}`, {
+			headers: {
+				Accept: "application/vnd.npm.install-v1+json",
+			},
+		}).then((res) => res.json());
 
-			cache.set(name, {
-				tags: response["dist-tags"],
-				versions: Object.fromEntries(
-					Object.entries(response.versions).map(([key, value]) => [
-						key,
-						{
-							unpacked: value.dist.unpackedSize,
-							tarball: value.dist.tarball,
-							dependencies: value.dependencies ?? {},
-						},
-					]),
-				),
-			});
+		if ("error" in response) {
+			throw new Error(response.error);
 		}
 
-		const data = cache.get(name);
-
-		const selectedVersion = semverMaxSatisfying(Object.keys(data.versions), data.tags[version] ?? version);
-		if (selectedVersion === null) {
-			throw new RangeError(`Cannot find version "${version}" on "${name}"`);
-		}
-
-		return {
-			name,
-			version: selectedVersion,
-			...data.versions[selectedVersion],
-		};
-	} catch (error) {
-		throw error;
+		cache.set(name, {
+			tags: response["dist-tags"],
+			versions: Object.fromEntries(
+				Object.entries(response.versions).map(([key, value]) => [
+					key,
+					{
+						unpacked: value.dist.unpackedSize,
+						tarball: value.dist.tarball,
+						dependencies: value.dependencies ?? {},
+					},
+				]),
+			),
+		});
 	}
+
+	const data = cache.get(name);
+
+	const selectedVersion = semverMaxSatisfying(Object.keys(data.versions), data.tags[version] ?? version);
+	if (selectedVersion === null) {
+		throw new RangeError(`Cannot find version "${version}" on "${name}"`);
+	}
+
+	return {
+		name,
+		version: selectedVersion,
+		...data.versions[selectedVersion],
+	};
 };
 
 const gunzipPromise = promisify(gunzip);
