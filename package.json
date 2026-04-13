@@ -24,6 +24,7 @@
 		"types": "tsc --noEmit"
 	},
 	"dependencies": {
+		"filesize": "^11.0.15",
 		"semver": "^7.7.4"
 	},
 	"devDependencies": {

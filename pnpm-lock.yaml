@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      filesize:
+        specifier: ^11.0.15
+        version: 11.0.15
       semver:
         specifier: ^7.7.4
         version: 7.7.4
@@ -120,6 +123,10 @@ packages:
     peerDependenciesMeta:
       picomatch:
         optional: true
+
+  filesize@11.0.15:
+    resolution: {integrity: sha512-30TpbYxQxCpi4XdVjkwXYQ37CzZltV38+P7MYroQ+4NK/Dmx9mxixFNrolzcmEIBsjT/uowC9T7kiy2+C12r1A==}
+    engines: {node: '>= 10.8.0'}
 
   git-hooks-list@4.2.1:
     resolution: {integrity: sha512-WNvqJjOxxs/8ZP9+DWdwWJ7cDsd60NHf39XnD82pDVrKO5q7xfPqpkK6hwEAmBa/ZSEE4IOoR75EzbbIuwGlMw==}
@@ -263,6 +270,8 @@ snapshots:
   fdir@6.5.0(picomatch@4.0.4):
     optionalDependencies:
       picomatch: 4.0.4
+
+  filesize@11.0.15: {}
 
   git-hooks-list@4.2.1: {}
 
