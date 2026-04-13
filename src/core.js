@@ -53,24 +53,14 @@ const fetchPackage = async (name, version) => {
 			cache.set(name, {
 				tags: response["dist-tags"],
 				versions: Object.fromEntries(
-					Object.entries(response.versions).map(([key, value]) => {
-						const newValue = {
+					Object.entries(response.versions).map(([key, value]) => [
+						key,
+						{
 							unpacked: value.dist.unpackedSize,
 							tarball: value.dist.tarball,
 							dependencies: value.dependencies ?? {},
-						};
-
-						// Add peerDependencies to dependencies
-						if (Object.keys(value.peerDependencies ?? {}).length > 0) {
-							for (const dependency in value.peerDependencies) {
-								if (value.peerDependenciesMeta?.[dependency].optional !== true) {
-									newValue.dependencies[dependency] = value.peerDependencies[dependency];
-								}
-							}
-						}
-
-						return [key, newValue];
-					}),
+						},
+					]),
 				),
 			});
 		}
