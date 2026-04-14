@@ -123,9 +123,7 @@ export const getPackageSize = async (name, version, onFetch) => {
 
 		seen.add(namespace);
 
-		for (const dependency in data.dependencies) {
-			await recursive(dependency, data.dependencies[dependency], false);
-		}
+		return await Promise.all(Object.entries(data.dependencies).map(([dependency, dv]) => recursive(dependency, dv, false)));
 	};
 
 	await recursive(name, version, true);
