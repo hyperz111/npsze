@@ -42,6 +42,10 @@ const cache = new Map();
  * @return {Promise<FetchResult>}
  */
 const fetchPackage = async (name, version) => {
+	if (version.startsWith("npm:")) {
+		({ name, version } = parsePackageName(version.slice(4)));
+	}
+
 	if (!cache.has(name)) {
 		const response = /** @type {Record<string, any>} */ (
 			await fetch(`https://registry.npmjs.org/${name}`, {
