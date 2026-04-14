@@ -6,21 +6,13 @@
 	"repository": "https://github.com/hyperz111/npsze.git",
 	"license": "MIT",
 	"author": "Hyper-Z11 (https://github.com/hyperz111)",
-	"sideEffects": false,
 	"type": "module",
-	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
-		}
-	},
 	"files": [
-		"dist"
+		"src"
 	],
 	"scripts": {
-		"build": "tsc",
 		"format": "prettier -w .",
-		"prepublishOnly": "pnpm run build",
+		"test": "node --test",
 		"types": "tsc --noEmit"
 	},
 	"dependencies": {
