@@ -2,7 +2,8 @@
 	"extends": "@hyperz111/tsconfig",
 	"compilerOptions": {
 		"allowJs": true,
-		"checkJs": true
+		"checkJs": true,
+		"types": ["node", "semver"]
 	},
 	"include": ["src"]
 }

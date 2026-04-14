@@ -6,7 +6,7 @@ import { promisify } from "node:util";
  * @typedef {Object} FetchResult
  * @property {string} name
  * @property {string} version
- * @property {number} unpacked
+ * @property {number} [unpacked]
  * @property {Record<string, string>} dependencies
  * @property {string} tarball
  */
@@ -43,18 +43,20 @@ const cache = new Map();
  */
 const fetchPackage = async (name, version) => {
 	if (!cache.has(name)) {
-		const response = await fetch(`https://registry.npmjs.org/${name}`, {
-			headers: {
-				Accept: "application/vnd.npm.install-v1+json",
-			},
-		}).then((res) => res.json());
+		const response = /** @type {Record<string, any>} */ (
+			await fetch(`https://registry.npmjs.org/${name}`, {
+				headers: {
+					Accept: "application/vnd.npm.install-v1+json",
+				},
+			}).then((res) => res.json())
+		);
 
 		if ("error" in response) {
 			throw new Error(response.error);
 		}
 
 		cache.set(name, {
-			tags: response["dist-tags"],
+			tags: /** @type {Record<string, string>} */ (response["dist-tags"]),
 			versions: Object.fromEntries(
 				Object.entries(response.versions).map(([key, value]) => [
 					key,
@@ -68,7 +70,7 @@ const fetchPackage = async (name, version) => {
 		});
 	}
 
-	const data = cache.get(name);
+	const data = /** @type {CacheValue} */ (cache.get(name));
 
 	const selectedVersion = semverMaxSatisfying(Object.keys(data.versions), data.tags[version] ?? version);
 	if (selectedVersion === null) {
@@ -78,7 +80,7 @@ const fetchPackage = async (name, version) => {
 	return {
 		name,
 		version: selectedVersion,
-		...data.versions[selectedVersion],
+		.../** @type {CacheValue["versions"][keyof CacheValue["versions"]]} */ (data.versions[selectedVersion]),
 	};
 };
 
@@ -87,8 +89,8 @@ const gunzipPromise = promisify(gunzip);
 /**
  * @param {string} name
  * @param {string} version
- * @param {(message: string) => void} onFetch
- * @returns {Promise<Omit<FetchResult, "dependencies" | "tarball"> & { install: number }>}
+ * @param {(name: string, version: string) => void} onFetch
+ * @returns {Promise<{ name: string, version: string, unpacked: number, install: number }>}
  */
 export const getPackageSize = async (name, version, onFetch) => {
 	let install = 0;
@@ -96,6 +98,12 @@ export const getPackageSize = async (name, version, onFetch) => {
 	/** @type {Set<string>} */
 	const seen = new Set();
 
+	/**
+	 * @param {string} n
+	 * @param {string} v
+	 * @param {boolean} top
+	 * @returns {Promise<void>}
+	 */
 	const recursive = async (n, v, top) => {
 		onFetch(n, v);
 
@@ -123,7 +131,7 @@ export const getPackageSize = async (name, version, onFetch) => {
 
 		seen.add(namespace);
 
-		return await Promise.all(Object.entries(data.dependencies).map(([dependency, dv]) => recursive(dependency, dv, false)));
+		await Promise.all(Object.entries(data.dependencies).map((dependency) => recursive(dependency[0], dependency[1], false)));
 	};
 
 	await recursive(name, version, true);

@@ -58,7 +58,11 @@ export const run = async (p) => {
 	const { name, version } = parsePackageName(packageName);
 
 	try {
-		const result = await getPackageSize(name, version, (n, v) => p.stdout.write(`Fetching ${n}@${v}\n`));
+		const result = await getPackageSize(
+			name,
+			version,
+			/** @type {(n: string, v: string) => void} */ ((n, v) => p.stdout.write(`Fetching ${n}@${v}\n`)),
+		);
 		p.stdout.write(`Succesfully fetch ${name}@${version}\n`);
 
 		const buffers = [
@@ -87,6 +91,7 @@ export const run = async (p) => {
 		);
 		return 0;
 	} catch (error) {
+		// @ts-ignore
 		p.stdout.write(`Failed fetch ${name}@${version} with error: ${error.message}\n`);
 		return 1;
 	}
