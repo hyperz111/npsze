@@ -2,23 +2,13 @@
 
 Get npm package size.
 
-## Install
-
-```sh
-$ npm install npsze
-```
-
 ## Usage
 
-```js
-import mod from "npsze";
-
-mod(); // => true
+```sh
+$ npx npsze
 ```
 
-## API
-
-Please refer to the `d.ts` file for more information.
+Type `--help` for more information.
 
 ## License
 
