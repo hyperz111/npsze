@@ -32,6 +32,7 @@ export const run = async (p) => {
 					"  -h, --help       Show program help.",
 					"  -v, --version    Show program version.",
 					"",
+					"",
 				].join("\n"),
 			);
 			return 0;
