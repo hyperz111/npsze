@@ -11,10 +11,19 @@ importers:
       filesize:
         specifier: ^11.0.15
         version: 11.0.15
+      hono:
+        specifier: ^4.13.8
+        version: 4.13.8
       semver:
         specifier: ^7.7.4
         version: 7.7.4
+      verkit:
+        specifier: ^0.5.0
+        version: 0.5.0
     devDependencies:
+      '@hono/node-server':
+        specifier: ^2.1.1
+        version: 2.1.1(hono@4.13.8)
       '@hyperz111/prettier-config':
         specifier: ^1
         version: 1.1.0(prettier@3.8.1)(svelte@5.55.2)
@@ -35,6 +44,12 @@ importers:
         version: 6.0.2
 
 packages:
+
+  '@hono/node-server@2.1.1':
+    resolution: {integrity: sha512-ELuehkj5VCBdgEw9zs+ivkKwyzzUCSQuE96YmiPvn1ECBoZCczbFXJLeEGMTYjphP6gydh4pHMqEYPVMYUVgQg==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      hono: ^4
 
   '@hyperz111/prettier-config@1.1.0':
     resolution: {integrity: sha512-ELAAo9G2Q3vOLfnq+ftIwxwZgIfeezEap8Jer6FkJeJtq6XWbHOepAAy3YGLRAZVWCDiEWZu7FClm6II1E0+Dw==}
@@ -131,6 +146,10 @@ packages:
   git-hooks-list@4.2.1:
     resolution: {integrity: sha512-WNvqJjOxxs/8ZP9+DWdwWJ7cDsd60NHf39XnD82pDVrKO5q7xfPqpkK6hwEAmBa/ZSEE4IOoR75EzbbIuwGlMw==}
 
+  hono@4.13.8:
+    resolution: {integrity: sha512-/Gng7NfoykZl2pjukW5Z6+8Yxm3BPRf86GTbQnt0SbySkvax4fyL4H3HhY1cCpBGmiW9XDRFzRV+CXK2W8QudQ==}
+    engines: {node: '>=16.9.0'}
+
   is-plain-obj@4.1.0:
     resolution: {integrity: sha512-+Pgi+vMuUNkJyExiMBt5IlFoMyKnr5zhJ4Uspz58WOhBF5QoIZkFyNHIbBAtHwzVAgk5RtndVNsDRN61/mmDqg==}
     engines: {node: '>=12'}
@@ -196,10 +215,18 @@ packages:
   undici-types@7.19.2:
     resolution: {integrity: sha512-qYVnV5OEm2AW8cJMCpdV20CDyaN3g0AjDlOGf1OW4iaDEx8MwdtChUp4zu4H0VP3nDRF/8RKWH+IPp9uW0YGZg==}
 
+  verkit@0.5.0:
+    resolution: {integrity: sha512-u4J1hr6Y+C/hit34GwL3eIcUf3wngT8TlYUjK7tk0jxydKLAq3sYvifjdTDA6U3KCKRcQCQDGf/srjxfZF3l7g==}
+    engines: {node: '>=18.12.0'}
+
   zimmerframe@1.1.4:
     resolution: {integrity: sha512-B58NGBEoc8Y9MWWCQGl/gq9xBCe4IiKM0a2x7GZdQKOW5Exr8S1W24J6OgM1njK8xCRGvAJIL/MxXHf6SkmQKQ==}
 
 snapshots:
+
+  '@hono/node-server@2.1.1(hono@4.13.8)':
+    dependencies:
+      hono: 4.13.8
 
   '@hyperz111/prettier-config@1.1.0(prettier@3.8.1)(svelte@5.55.2)':
     dependencies:
@@ -275,6 +302,8 @@ snapshots:
 
   git-hooks-list@4.2.1: {}
 
+  hono@4.13.8: {}
+
   is-plain-obj@4.1.0: {}
 
   is-reference@3.0.3:
@@ -343,5 +372,7 @@ snapshots:
   typescript@6.0.2: {}
 
   undici-types@7.19.2: {}
+
+  verkit@0.5.0: {}
 
   zimmerframe@1.1.4: {}
