@@ -1,27 +1,22 @@
-import semverMaxSatisfying from "semver/ranges/max-satisfying.js";
+import { findMaxSatisfying } from "verkit";
+import { unpackTar } from "modern-tar";
 import { gunzip } from "node:zlib";
 import { promisify } from "node:util";
 
-/**
- * @typedef {Object} FetchResult
- * @property {string} name
- * @property {string} version
- * @property {number} [unpacked]
- * @property {Record<string, string>} dependencies
- * @property {string} tarball
- */
+interface FetchResult {
+	name: string;
+	version: string;
+	unpacked?: number;
+	dependencies?: Record<string, string>;
+	tarball: string;
+}
 
-/**
- * @typedef {Object} CacheValue
- * @property {Record<string, string>} tags
- * @property {Record<string, Omit<FetchResult, "name" | "version">>} versions
- */
+interface CacheValue {
+	tags: Record<string, string>;
+	versions: Record<string, Omit<FetchResult, "name" | "version">>;
+}
 
-/**
- * @param {string} packageName
- * @returns {{ name: string, version: string }}
- */
-export const parsePackageName = (packageName) => {
+export const parsePackageName = (packageName: string): { name: string, version: string } => {
 	const atIndex = packageName.lastIndexOf("@");
 
 	if (atIndex > 0) {
@@ -33,41 +28,49 @@ export const parsePackageName = (packageName) => {
 	return { name: packageName, version: "latest" };
 };
 
-/** @type {Map<string, CacheValue>} */
-const cache = new Map();
+const cache = new Map<string, CacheValue>();
 
-/**
- * @param {string} name
- * @param {string} version
- * @return {Promise<FetchResult>}
- */
-const fetchPackage = async (name, version) => {
+interface ResponseResult {
+	// If we got a http error
+	error?: string;
+	// needed result
+	"dist-tags": Record<string, string>;
+	versions: Record<string, {
+		dist: {
+			unpackedSize?: number;
+			tarball: string;
+		},
+		dependencies?: Record<string, string>
+	}>;
+}
+
+const fetchPackage = async (name: string, version: string): Promise<FetchResult> => {
 	if (version.startsWith("npm:")) {
 		({ name, version } = parsePackageName(version.slice(4)));
 	}
 
 	if (!cache.has(name)) {
-		const response = /** @type {Record<string, any>} */ (
+		const response = (
 			await fetch(`https://registry.npmjs.org/${name}`, {
 				headers: {
 					Accept: "application/vnd.npm.install-v1+json",
 				},
 			}).then((res) => res.json())
-		);
+		) as ResponseResult;
 
 		if ("error" in response) {
-			throw new Error(response.error);
+			throw new Error(response.error as string);
 		}
 
 		cache.set(name, {
-			tags: /** @type {Record<string, string>} */ (response["dist-tags"]),
+			tags: response["dist-tags"] as Record<string, string>,
 			versions: Object.fromEntries(
 				Object.entries(response.versions).map(([key, value]) => [
 					key,
 					{
 						unpacked: value.dist.unpackedSize,
 						tarball: value.dist.tarball,
-						dependencies: value.dependencies ?? {},
+						dependencies: value.dependencies,
 					},
 				]),
 			),
@@ -76,7 +79,7 @@ const fetchPackage = async (name, version) => {
 
 	const data = /** @type {CacheValue} */ (cache.get(name));
 
-	const selectedVersion = semverMaxSatisfying(Object.keys(data.versions), data.tags[version] ?? version);
+	const selectedVersion = findMaxSatisfying(Object.keys(data.versions), data.tags[version] ?? version);
 	if (selectedVersion === null) {
 		throw new RangeError(`Cannot find version "${version}" on "${name}"`);
 	}
@@ -99,16 +102,9 @@ const gunzipPromise = promisify(gunzip);
 export const getPackageSize = async (name, version, onFetch) => {
 	let install = 0;
 	let unpacked = 0;
-	/** @type {Set<string>} */
-	const seen = new Set();
+	const seen = new Set<string>();
 
-	/**
-	 * @param {string} n
-	 * @param {string} v
-	 * @param {boolean} top
-	 * @returns {Promise<void>}
-	 */
-	const recursive = async (n, v, top) => {
+	const recursive = async (n: string, v: string, top: boolean) => {
 		onFetch(n, v);
 
 		const data = await fetchPackage(n, v);
@@ -120,7 +116,9 @@ export const getPackageSize = async (name, version, onFetch) => {
 		if (data.unpacked === undefined) {
 			const tarball = await fetch(data.tarball)
 				.then((res) => res.arrayBuffer())
-				.then((buffer) => gunzipPromise(buffer));
+				.then((buffer) => gunzipPromise(buffer))
+				.then((tar) => unpackTar(tar))
+				.then((entries) => entries.reduce((before, current) => before + current.header.size, 0));
 			data.unpacked = tarball.byteLength;
 		}
 
@@ -135,7 +133,12 @@ export const getPackageSize = async (name, version, onFetch) => {
 
 		seen.add(namespace);
 
-		await Promise.all(Object.entries(data.dependencies).map((dependency) => recursive(dependency[0], dependency[1], false)));
+		if (data.dependencies) {
+			for (const [name, version] of Object.entries(data.dependencies)) {
+				await recursive(name, version, false);
+			}
+		}
+
 	};
 
 	await recursive(name, version, true);
