@@ -3,7 +3,7 @@ import { unpackTar } from "modern-tar";
 import { gunzip } from "node:zlib";
 import { promisify } from "node:util";
 
-export const parsePackageName = (packageName: string): { name: string, version: string } => {
+export const parsePackageName = (packageName: string): { name: string; version: string } => {
 	const atIndex = packageName.lastIndexOf("@");
 
 	if (atIndex > 0) {
@@ -18,14 +18,19 @@ export const parsePackageName = (packageName: string): { name: string, version: 
 interface FetchResult {
 	name: string;
 	version: string;
-	unpacked?: number;
-	dependencies?: Record<string, string>;
-	tarball: string;
+	size: number;
+	dependencies: Record<string, string>;
 }
 
 interface CacheValue {
-	tags: Record<string, string>;
-	versions: Record<string, Omit<FetchResult, "name" | "version">>;
+	t: Record<string, string>;
+	v: Record<
+		string,
+		{
+			p: number | string;
+			d?: Record<string, string>;
+		}
+	>;
 }
 
 const cache = new Map<string, CacheValue>();
@@ -35,13 +40,16 @@ interface ResponseResult {
 	error?: string;
 	// needed result
 	"dist-tags": Record<string, string>;
-	versions: Record<string, {
-		dist: {
-			unpackedSize?: number;
-			tarball: string;
-		},
-		dependencies?: Record<string, string>
-	}>;
+	versions: Record<
+		string,
+		{
+			dist: {
+				unpackedSize?: number;
+				tarball: string;
+			};
+			dependencies?: Record<string, string>;
+		}
+	>;
 }
 
 const fetchPackage = async (name: string, version: string): Promise<FetchResult> => {
@@ -50,27 +58,24 @@ const fetchPackage = async (name: string, version: string): Promise<FetchResult>
 	}
 
 	if (!cache.has(name)) {
-		const response = (
-			await fetch(`https://registry.npmjs.org/${name}`, {
-				headers: {
-					Accept: "application/vnd.npm.install-v1+json",
-				},
-			}).then((res) => res.json())
-		) as ResponseResult;
+		const response = (await fetch(`https://registry.npmjs.org/${name}`, {
+			headers: {
+				Accept: "application/vnd.npm.install-v1+json",
+			},
+		}).then((res) => res.json())) as ResponseResult;
 
 		if ("error" in response) {
 			throw new Error(response.error as string);
 		}
 
 		cache.set(name, {
-			tags: response["dist-tags"] as Record<string, string>,
-			versions: Object.fromEntries(
+			t: response["dist-tags"],
+			v: Object.fromEntries(
 				Object.entries(response.versions).map(([key, value]) => [
 					key,
 					{
-						unpacked: value.dist.unpackedSize,
-						tarball: value.dist.tarball,
-						dependencies: value.dependencies,
+						p: value.dist.unpackedSize ?? value.dist.tarball,
+						...(value.dependencies ? { d: value.dependencies } : {}),
 					},
 				]),
 			),
@@ -79,15 +84,25 @@ const fetchPackage = async (name: string, version: string): Promise<FetchResult>
 
 	const data = cache.get(name)!;
 
-	const selectedVersion = findMaxSatisfying(Object.keys(data.versions), data.tags[version] ?? version);
+	const selectedVersion = findMaxSatisfying(Object.keys(data.v), data.t[version] ?? version);
 	if (selectedVersion === null) {
 		throw new RangeError(`Cannot find version "${version}" on "${name}"`);
+	}
+
+	const target = data.v[selectedVersion]!;
+	if (typeof target.p === "string") {
+		target.p = await fetch(target.p)
+			.then((res) => res.arrayBuffer())
+			.then((buffer) => gunzipPromise(buffer))
+			.then((tar) => unpackTar(tar))
+			.then((entries) => entries.reduce((before, current) => before + current.header.size, 0));
 	}
 
 	return {
 		name,
 		version: selectedVersion,
-		...data.versions[selectedVersion]!,
+		size: target.p as number,
+		dependencies: target.d ?? {},
 	};
 };
 
@@ -112,31 +127,17 @@ export const getPackageSize = async (name: string, version: string): Promise<Ana
 			return;
 		}
 
-		if (data.unpacked === undefined) {
-			data.unpacked = await fetch(data.tarball)
-				.then((res) => res.arrayBuffer())
-				.then((buffer) => gunzipPromise(buffer))
-				.then((tar) => unpackTar(tar))
-				.then((entries) => entries.reduce((before, current) => before + current.header.size, 0));
-		}
-
-		const size = data.unpacked as number;
-
 		if (top) {
-			unpacked += size;
+			unpacked += data.size;
 			version = data.version;
 		}
-
-		install += size;
+		install += data.size;
 
 		seen.add(namespace);
 
-		if (data.dependencies) {
-			for (const [name, version] of Object.entries(data.dependencies)) {
-				await recursive(name, version, false);
-			}
+		for (const [name, version] of Object.entries(data.dependencies)) {
+			await recursive(name, version, false);
 		}
-
 	};
 
 	await recursive(name, version, true);
