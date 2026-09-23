@@ -16,8 +16,11 @@
 		"types": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@netlify/blobs": "^11.0.3",
+		"@netlify/functions": "^6.0.0",
 		"filesize": "^11.0.15",
 		"hono": "^4.13.8",
+		"modern-tar": "^0.8.5",
 		"semver": "^7.7.4",
 		"verkit": "^0.5.0"
 	},
