@@ -1,7 +1,8 @@
-import { findMaxSatisfying } from "verkit";
-import { unpackTar } from "modern-tar";
 import { gunzip } from "node:zlib";
 import { promisify } from "node:util";
+import { unpackTar } from "modern-tar";
+import { findMaxSatisfying } from "verkit";
+import { shouldChange, getPackageData, setPackageData } from "./store.ts";
 
 export const parsePackageName = (packageName: string): { name: string; version: string } => {
 	const atIndex = packageName.lastIndexOf("@");
@@ -21,19 +22,6 @@ interface FetchResult {
 	size: number;
 	dependencies: Record<string, string>;
 }
-
-interface CacheValue {
-	t: Record<string, string>;
-	v: Record<
-		string,
-		{
-			p: number | string;
-			d?: Record<string, string>;
-		}
-	>;
-}
-
-const cache = new Map<string, CacheValue>();
 
 interface ResponseResult {
 	// If we got a http error
@@ -57,18 +45,18 @@ const fetchPackage = async (name: string, version: string): Promise<FetchResult>
 		({ name, version } = parsePackageName(version.slice(4)));
 	}
 
-	if (!cache.has(name)) {
+	if (await shouldChange(name)) {
 		const response = (await fetch(`https://registry.npmjs.org/${name}`, {
 			headers: {
 				Accept: "application/vnd.npm.install-v1+json",
 			},
 		}).then((res) => res.json())) as ResponseResult;
 
-		if ("error" in response) {
-			throw new Error(response.error as string);
+		if (response.error) {
+			throw new Error(response.error);
 		}
 
-		cache.set(name, {
+		await setPackageData(name, {
 			t: response["dist-tags"],
 			v: Object.fromEntries(
 				Object.entries(response.versions).map(([key, value]) => [
@@ -82,7 +70,7 @@ const fetchPackage = async (name: string, version: string): Promise<FetchResult>
 		});
 	}
 
-	const data = cache.get(name)!;
+	const data = (await getPackageData(name))!;
 
 	const selectedVersion = findMaxSatisfying(Object.keys(data.v), data.t[version] ?? version);
 	if (selectedVersion === null) {
@@ -144,3 +132,5 @@ export const getPackageSize = async (name: string, version: string): Promise<Ana
 
 	return { name, version, unpacked, install };
 };
+
+console.log(await getPackageSize("@clack/prompts", "latest"));
