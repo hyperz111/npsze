@@ -1,5 +1,6 @@
 import { gunzip } from "node:zlib";
 import { promisify } from "node:util";
+import { HTTPException } from "hono/http-exception";
 import { unpackTar } from "modern-tar";
 import { findMaxSatisfying } from "verkit";
 import { shouldChange, getPackageData, setPackageData } from "./store.ts";
@@ -24,9 +25,6 @@ interface FetchResult {
 }
 
 interface ResponseResult {
-	// If we got a http error
-	error?: string;
-	// needed result
 	"dist-tags": Record<string, string>;
 	versions: Record<
 		string,
@@ -46,20 +44,22 @@ const fetchPackage = async (name: string, version: string): Promise<FetchResult>
 	}
 
 	if (await shouldChange(name)) {
-		const response = (await fetch(`https://registry.npmjs.org/${name}`, {
+		const response = await fetch(`https://registry.npmjs.org/${name}`, {
 			headers: {
 				Accept: "application/vnd.npm.install-v1+json",
 			},
-		}).then((res) => res.json())) as ResponseResult;
+		});
 
-		if (response.error) {
-			throw new Error(response.error);
+		if (!response.ok) {
+			throw new HTTPException(response.status, { message: response.statusText });
 		}
 
+		const data = (await response.json()) as ResponseResult;
+
 		await setPackageData(name, {
-			t: response["dist-tags"],
+			t: data["dist-tags"],
 			v: Object.fromEntries(
-				Object.entries(response.versions).map(([key, value]) => [
+				Object.entries(data.versions).map(([key, value]) => [
 					key,
 					{
 						p: value.dist.unpackedSize ?? value.dist.tarball,
@@ -132,5 +132,3 @@ export const getPackageSize = async (name: string, version: string): Promise<Ana
 
 	return { name, version, unpacked, install };
 };
-
-console.log(await getPackageSize("@clack/prompts", "latest"));
