@@ -7,8 +7,16 @@ const plugin = (): Plugin => {
 	const app = new Hono();
 	app.route("/api", api);
 
+	const middleware = getRequestListener(app.fetch);
+
 	const configure = (server: ViteDevServer | PreviewServer) => {
-		server.middlewares.use(getRequestListener(app.fetch));
+		server.middlewares.use((request, response, next) => {
+			if (request.url?.startsWith("/api")) {
+				middleware(request, response);
+			} else {
+				next();
+			}
+		});
 	};
 
 	return {
