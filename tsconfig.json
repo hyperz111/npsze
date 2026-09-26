@@ -3,7 +3,7 @@
 	"compilerOptions": {
 		"allowJs": true,
 		"checkJs": true,
-		"types": ["node", "semver"]
+		"types": ["node"]
 	},
 	"include": ["src"]
 }
