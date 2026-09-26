@@ -11,6 +11,8 @@
 		"src"
 	],
 	"scripts": {
+		"build": "NODE_OPTIONS='--import jiti/register' vite build",
+		"dev": "NODE_OPTIONS='--import jiti/register' vite dev",
 		"format": "prettier -w .",
 		"test": "node --test",
 		"types": "tsc --noEmit"
@@ -27,6 +29,7 @@
 		"@hyperz111/prettier-config": "^1",
 		"@hyperz111/tsconfig": "^1",
 		"@types/node": "^25.6.0",
+		"jiti": "^2.7.0",
 		"prettier": "^3",
 		"typescript": "^6",
 		"vite": "^8.3.1"
