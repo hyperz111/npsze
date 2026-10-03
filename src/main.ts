@@ -1,11 +1,13 @@
 import "./style.css";
 import { filesize } from "filesize";
-import { type AnalyzeResult } from "./api/v0/core.js";
+import { type AnalyzeResult } from "./api/v0/types.ts";
 
 const LABELS = {
 	unpacked: "Unpacked size",
 	install: "Install Size",
 };
+
+let currentResultElement: HTMLElement | null = null;
 
 const main = document.querySelector<HTMLDivElement>("main")!;
 const input = document.querySelector<HTMLInputElement>("input")!;
@@ -41,7 +43,11 @@ const update = async (packageName: string) => {
 		history.pushState(null, "", `/?package=${nameAndVersion}`);
 		input.value = nameAndVersion;
 		document.title = `${nameAndVersion} - npsze`;
-		main.appendChild(createResultElement(result));
+
+		if (currentResultElement !== null) {
+			main.removeChild(currentResultElement);
+		}
+		main.appendChild((currentResultElement = createResultElement(result)));
 	} catch (error) {
 		alert(error);
 	}

@@ -1,20 +1,6 @@
 // This file contains shims for dev environment.
 // Will be replaced with Netlify Blobs on production.
-
-interface Schema {
-	t: Record<string, string>;
-	v: Record<
-		string,
-		{
-			p: number | string;
-			d?: Record<string, string>;
-		}
-	>;
-}
-
-interface Metadata {
-	lastUpdatedAt: number;
-}
+import { type Schema, type Metadata } from "./types.ts";
 
 const ONE_DAY_DURATION = 1000 * 60 * 60 * 24;
 const store = new Map<string, { metadata: Metadata; data: Schema }>();

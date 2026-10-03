@@ -4,6 +4,7 @@ import { HTTPException } from "hono/http-exception";
 import { unpackTar } from "modern-tar";
 import { findMaxSatisfying } from "verkit";
 import { shouldChange, getPackageData, setPackageData } from "./store.ts";
+import { type AnalyzeResult } from "./types.ts";
 
 export const parsePackageName = (packageName: string): { name: string; version: string } => {
 	const atIndex = packageName.lastIndexOf("@");
@@ -95,13 +96,6 @@ const fetchPackage = async (name: string, version: string): Promise<FetchResult>
 };
 
 const gunzipPromise = promisify(gunzip);
-
-export interface AnalyzeResult {
-	name: string;
-	version: string;
-	unpacked: number;
-	install: number;
-}
 
 export const getPackageSize = async (name: string, version: string): Promise<AnalyzeResult> => {
 	let install = 0;
