@@ -30,7 +30,6 @@
 		"@picocss/pico": "^2.1.1",
 		"filesize": "^11.0.15",
 		"hono": "^4.13.8",
-		"modern-normalize": "^3.0.1",
 		"modern-tar": "^0.8.5",
 		"verkit": "^0.5.0"
 	},

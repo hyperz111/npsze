@@ -20,9 +20,6 @@ importers:
       hono:
         specifier: ^4.13.8
         version: 4.13.8
-      modern-normalize:
-        specifier: ^3.0.1
-        version: 3.0.1
       modern-tar:
         specifier: ^0.8.5
         version: 0.8.5
@@ -504,10 +501,6 @@ packages:
 
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
-
-  modern-normalize@3.0.1:
-    resolution: {integrity: sha512-VqlMdYi59Uch6fnUPxnpijWUQe+TW6zeWCvyr6Mb7JibheHzSuAAoJi2c71ZwIaWKpECpGpYHoaaBp6rBRr+/g==}
-    engines: {node: '>=6'}
 
   modern-tar@0.8.5:
     resolution: {integrity: sha512-snEhs+6G5Tjd4I7tLCDOaoln2RgE0bD19RzEKgvgK2hZ5VKy3MpLhLTZ2fWpXSTg4K2cyPwp+VHATFJhxfnOeA==}
@@ -1048,8 +1041,6 @@ snapshots:
   magic-string@0.30.21:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
-
-  modern-normalize@3.0.1: {}
 
   modern-tar@0.8.5: {}
 
