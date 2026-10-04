@@ -1,1 +1,32 @@
-@import "modern-normalize";
+@import "@picocss/pico/css/pico.css";
+
+#input > * {
+	width: 100%;
+}
+
+hgroup {
+	text-align: center;
+}
+
+#result {
+	text-align: center;
+	margin-block: 1.5rem;
+}
+
+#result > div > span {
+	font-size: 0.85rem;
+	color: var(--pico-gray);
+}
+
+#result > div > b {
+	font-size: 1.3rem;
+}
+
+#suggestions {
+	margin-block: 1.5rem;
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+}
