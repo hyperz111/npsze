@@ -19,7 +19,7 @@
 		"src"
 	],
 	"scripts": {
-		"build": "NODE_OPTIONS='--import jiti/register' vite build",
+		"build": "NODE_OPTIONS='--import jiti/register' vite build && rolldown -c rolldown.config.ts",
 		"dev": "NODE_OPTIONS='--import jiti/register' vite dev",
 		"format": "prettier -w .",
 		"test": "node --test",
@@ -41,6 +41,7 @@
 		"@types/node": "^25.6.0",
 		"jiti": "^2.7.0",
 		"prettier": "^3",
+		"rolldown": "^1.2.11",
 		"typescript": "^6",
 		"vite": "^8.3.1"
 	},
