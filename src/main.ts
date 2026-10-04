@@ -94,7 +94,9 @@ const update = async (packageName: string) => {
 		};
 		const nameAndVersion = `${result.name}@${result.version}`;
 
-		history.pushState(null, "", `/?package=${nameAndVersion}`);
+		const url = `/?package=${nameAndVersion}`;
+		history.pushState(null, "", url);
+
 		input.value = nameAndVersion;
 		document.title = `${nameAndVersion} - npsze`;
 
@@ -112,6 +114,10 @@ const update = async (packageName: string) => {
 
 button.addEventListener("click", async () => {
 	await update(input.value);
+});
+
+window.addEventListener("popstate", () => {
+	history.back();
 });
 
 document.addEventListener("DOMContentLoaded", async () => {
