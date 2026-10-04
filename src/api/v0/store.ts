@@ -1,6 +1,6 @@
 // This file contains shims for dev environment.
 // Will be replaced with Netlify Blobs on production.
-import { type Schema, type Metadata } from "./types.ts";
+import { type Schema, type Metadata } from "./types.js";
 
 const ONE_DAY_DURATION = 1000 * 60 * 60 * 24;
 const store = new Map<string, { metadata: Metadata; data: Schema }>();

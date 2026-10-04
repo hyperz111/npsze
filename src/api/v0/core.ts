@@ -4,7 +4,7 @@ import { HTTPException } from "hono/http-exception";
 import { unpackTar } from "modern-tar";
 import { findMaxSatisfying } from "verkit";
 import { shouldChange, getPackageData, setPackageData } from "#store-v0";
-import { type AnalyzeResult } from "./types.ts";
+import { type AnalyzeResult } from "./types.js";
 
 export const parsePackageName = (packageName: string): { name: string; version: string } => {
 	const atIndex = packageName.lastIndexOf("@");
@@ -52,7 +52,7 @@ const fetchPackage = async (name: string, version: string): Promise<FetchResult>
 		});
 
 		if (!response.ok) {
-			throw new HTTPException(response.status, { message: response.statusText });
+			throw new HTTPException(response.status as any, { message: response.statusText });
 		}
 
 		const data = (await response.json()) as ResponseResult;

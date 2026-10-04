@@ -1,6 +1,6 @@
 import "./style.css";
 import { filesize } from "filesize";
-import { type AnalyzeResult } from "./api/v0/types.ts";
+import { type AnalyzeResult } from "./api/v0/types.js";
 
 const LABELS = {
 	unpacked: "Unpacked Size",

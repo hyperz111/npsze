@@ -1,5 +1,5 @@
 import { getStore, type Store } from "@netlify/blobs";
-import { type Schema, type Metadata } from "./types.ts";
+import { type Schema, type Metadata } from "./types.js";
 
 const ONE_DAY_DURATION = 1000 * 60 * 60 * 24;
 let store: Store | null = null;
