@@ -7,7 +7,7 @@ const store = new Map<string, { metadata: Metadata; data: Schema }>();
 
 export const shouldChange = async (packageName: string): Promise<boolean> => {
 	const data = store.get(packageName);
-	if (!data || data.metadata.lastUpdatedAt > Date.now() + ONE_DAY_DURATION) {
+	if (!data || Date.now() > data.metadata.lastUpdatedAt + ONE_DAY_DURATION) {
 		return await Promise.resolve(true);
 	}
 	return await Promise.resolve(false);

@@ -3,7 +3,7 @@ import { promisify } from "node:util";
 import { HTTPException } from "hono/http-exception";
 import { unpackTar } from "modern-tar";
 import { findMaxSatisfying } from "verkit";
-import { shouldChange, getPackageData, setPackageData } from "./store.ts";
+import { shouldChange, getPackageData, setPackageData } from "#store-v0";
 import { type AnalyzeResult } from "./types.ts";
 
 export const parsePackageName = (packageName: string): { name: string; version: string } => {

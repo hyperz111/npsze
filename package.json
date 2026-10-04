@@ -1,12 +1,20 @@
 {
 	"name": "npsze",
 	"version": "0.0.0",
+	"private": true,
 	"description": "Get npm package size",
 	"keywords": [],
 	"repository": "https://github.com/hyperz111/npsze.git",
 	"license": "MIT",
-	"author": "Hyper-Z11 (https://github.com/hyperz111)",
+	"author": "hyperz111",
 	"type": "module",
+	"imports": {
+		"#store-v0": {
+			"production": "./src/api/v0/store-production.ts",
+			"development": "./src/api/v0/store.ts",
+			"default": "./src/api/v0/store.ts"
+		}
+	},
 	"files": [
 		"src"
 	],
