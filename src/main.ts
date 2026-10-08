@@ -84,14 +84,7 @@ const update = async (packageName: string) => {
 	button.innerText = "Fetching...";
 
 	try {
-		// const result = await getSize(packageName);
-		await new Promise((r) => setTimeout(r, 500));
-		const result = {
-			name: "react",
-			version: "19.0.1",
-			unpacked: 190768,
-			install: 190768,
-		};
+		const result = await getSize(packageName);
 		const nameAndVersion = `${result.name}@${result.version}`;
 
 		const url = `/?package=${nameAndVersion}`;
