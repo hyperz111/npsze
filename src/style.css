@@ -10,15 +10,14 @@ hgroup {
 
 #result {
 	text-align: center;
-	margin-block: 1.5rem;
 }
 
-#result > div > span {
+#result > section > div > span {
 	font-size: 0.85rem;
 	color: var(--pico-gray);
 }
 
-#result > div > b {
+#result > section > div > strong {
 	font-size: 1.3rem;
 }
 
