@@ -12,13 +12,7 @@ const button = document.querySelector<HTMLButtonElement>("button")!;
 const getSize = (name: string): Promise<AnalyzeResult> =>
 	fetch(`/api/v0/package/${name}`).then((response) => response.json());
 
-const updateByPackage = async (packageName: string, pushHistory: boolean) => {
-	if (pushHistory) {
-		console.log("pushState");
-		history.pushState(null, "", `/?package=${packageName}`);
-	}
-
-	edit(input, { value: packageName });
+const updateByPackage = async (packageName: string) => {
 	edit(
 		button,
 		{
@@ -33,11 +27,7 @@ const updateByPackage = async (packageName: string, pushHistory: boolean) => {
 		const result = await getSize(packageName);
 		const nameAndVersion = `${result.name}@${result.version}`;
 
-		input.value = nameAndVersion;
 		document.title = `${nameAndVersion} - npsze`;
-
-		console.log("replaceState");
-		history.replaceState(null, "", `/?package=${nameAndVersion}`);
 
 		main.removeChild(currentBottomElement);
 		main.appendChild((currentBottomElement = createResultElement(result)));
@@ -56,7 +46,7 @@ const updateByPackage = async (packageName: string, pushHistory: boolean) => {
 	);
 };
 
-const update = async (pushHistory: boolean) => {
+const update = async () => {
 	if (currentBottomElement) {
 		main.removeChild(currentBottomElement);
 	}
@@ -68,18 +58,19 @@ const update = async (pushHistory: boolean) => {
 	const url = new URL(window.location.href);
 	const packageName = url.searchParams.get("package");
 	if (packageName !== null) {
-		await updateByPackage(packageName, pushHistory);
+		await updateByPackage(packageName);
 	}
 };
 
 button.addEventListener("click", async () => {
-	await updateByPackage(input.value, true);
+	history.pushState(null, "", `/?package=${input.value}`);
+	await updateByPackage(input.value);
 });
 
 window.addEventListener("popstate", async () => {
-	await update(false);
+	await update();
 });
 
 document.addEventListener("DOMContentLoaded", async () => {
-	await update(false);
+	await update();
 });
