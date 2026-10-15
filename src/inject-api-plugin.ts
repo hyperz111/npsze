@@ -4,10 +4,7 @@ import { getRequestListener } from "@hono/node-server";
 import api from "./api/index.js";
 
 const plugin = (): Plugin => {
-	const app = new Hono();
-	app.route("/api", api);
-
-	const middleware = getRequestListener(app.fetch);
+	const middleware = getRequestListener(api.fetch);
 
 	const configure = (server: ViteDevServer | PreviewServer) => {
 		server.middlewares.use((request, response, next) => {
