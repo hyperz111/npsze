@@ -27,6 +27,7 @@
 	},
 	"dependencies": {
 		"@netlify/blobs": "^11.0.3",
+		"@netlify/functions": "^6.0.2",
 		"@picocss/pico": "^2.1.1",
 		"filesize": "^11.0.15",
 		"hono": "^4.13.8",
