@@ -2,9 +2,9 @@ import { defineConfig } from "rolldown/config";
 import pkg from "./package.json" with { type: "json" };
 
 export default defineConfig({
-	input: "src/api/index.ts",
+	input: "src/api/function.ts",
 	output: {
-		dir: "dist/api",
+		file: "dist/functions/api.js",
 		format: "esm",
 	},
 	platform: "node",
