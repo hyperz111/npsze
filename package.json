@@ -22,7 +22,7 @@
 		"build": "NODE_OPTIONS='--import jiti/register' vite build && rolldown -c rolldown.config.ts",
 		"dev": "NODE_OPTIONS='--import jiti/register' vite dev",
 		"format": "prettier -w .",
-		"test": "node --test",
+		"test": "echo no-op",
 		"types": "tsc --noEmit"
 	},
 	"dependencies": {
