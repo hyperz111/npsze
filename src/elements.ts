@@ -36,3 +36,10 @@ export const createSuggestionElement = () => {
 		...suggestions.map((suggestion) => tag("a", { href: `/?package=${suggestion}@latest` }, suggestion)),
 	]);
 };
+
+export const createErrorElement = (error: Error) => {
+	return tag("article", { id: "error" }, [
+		tag("strong", null, `${error.name}:`),
+		` ${error.message}`
+	]);
+};

@@ -1,16 +1,22 @@
 import "./style.css";
-import { createResultElement, createSuggestionElement } from "./elements.js";
+import { createResultElement, createSuggestionElement, createErrorElement } from "./elements.js";
 import { edit } from "./html.js";
 import { type AnalyzeResult } from "./api/v0/types.js";
 
 let currentBottomElement: HTMLElement;
+let currentErrorElement: HTMLElement;
 
 const main = document.querySelector<HTMLDivElement>("main")!;
 const input = document.querySelector<HTMLInputElement>("input")!;
 const button = document.querySelector<HTMLButtonElement>("button")!;
 
-const getSize = (name: string): Promise<AnalyzeResult> =>
-	fetch(`/api/v0/package/${name}`).then((response) => response.json());
+const getSize = async (name: string): Promise<AnalyzeResult> => {
+	const response = await fetch(`/api/v0/package/${name}`);
+	if (!response.ok) {
+		throw new Error(`${response.status} ${response.statusText}`);
+	}
+	return await response.json();
+}
 
 const updateByPackage = async (packageName: string) => {
 	edit(
@@ -32,7 +38,10 @@ const updateByPackage = async (packageName: string) => {
 		main.removeChild(currentBottomElement);
 		main.appendChild((currentBottomElement = createResultElement(result)));
 	} catch (error) {
-		alert(error);
+		if (currentErrorElement) {
+			main.removeChild(currentErrorElement);
+		}
+		main.prepend((currentErrorElement = createErrorElement(error as Error)));
 	}
 
 	edit(
@@ -58,6 +67,7 @@ const update = async () => {
 	const url = new URL(window.location.href);
 	const packageName = url.searchParams.get("package");
 	if (packageName !== null) {
+		edit(input, { value: packageName });
 		await updateByPackage(packageName);
 	}
 };

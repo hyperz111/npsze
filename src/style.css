@@ -8,13 +8,17 @@ hgroup {
 	text-align: center;
 }
 
+#error {
+	background-color: #c52f21;
+}
+
 #result {
 	text-align: center;
 }
 
 #result > section > div > span {
 	font-size: 0.85rem;
-	color: var(--pico-gray);
+	color: #ababab;
 }
 
 #result > section > div > strong {
