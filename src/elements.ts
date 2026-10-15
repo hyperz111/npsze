@@ -38,8 +38,5 @@ export const createSuggestionElement = () => {
 };
 
 export const createErrorElement = (error: Error) => {
-	return tag("article", { id: "error" }, [
-		tag("strong", null, `${error.name}:`),
-		` ${error.message}`
-	]);
+	return tag("article", { id: "error" }, [tag("strong", null, `${error.name}:`), ` ${error.message}`]);
 };

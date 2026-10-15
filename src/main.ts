@@ -16,7 +16,7 @@ const getSize = async (name: string): Promise<AnalyzeResult> => {
 		throw new Error(`${response.status} ${response.statusText}`);
 	}
 	return await response.json();
-}
+};
 
 const updateByPackage = async (packageName: string) => {
 	edit(
