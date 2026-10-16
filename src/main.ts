@@ -40,7 +40,7 @@ const updateByPackage = async (packageName: string) => {
 
 		document.title = `${nameAndVersion} - npsze`;
 
-		main.removeChild(currentBottomElement);
+		main.removeChild(currentBottomElement!);
 		main.appendChild((currentBottomElement = createResultElement(result)));
 	} catch (error) {
 		main.prepend((currentErrorElement = createErrorElement(error as Error)));
