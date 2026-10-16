@@ -3,8 +3,8 @@ import { createResultElement, createSuggestionElement, createErrorElement } from
 import { edit } from "./html.js";
 import { type AnalyzeResult } from "./api/v0/types.js";
 
-let currentBottomElement: HTMLElement;
-let currentErrorElement: HTMLElement;
+let currentBottomElement: HTMLElement | undefined;
+let currentErrorElement: HTMLElement | undefined;
 
 const main = document.querySelector<HTMLDivElement>("main")!;
 const input = document.querySelector<HTMLInputElement>("input")!;
@@ -19,6 +19,11 @@ const getSize = async (name: string): Promise<AnalyzeResult> => {
 };
 
 const updateByPackage = async (packageName: string) => {
+	if (currentErrorElement) {
+		currentErrorElement.remove();
+		currentErrorElement = undefined;
+	}
+
 	edit(
 		button,
 		{
@@ -38,9 +43,6 @@ const updateByPackage = async (packageName: string) => {
 		main.removeChild(currentBottomElement);
 		main.appendChild((currentBottomElement = createResultElement(result)));
 	} catch (error) {
-		if (currentErrorElement) {
-			main.removeChild(currentErrorElement);
-		}
 		main.prepend((currentErrorElement = createErrorElement(error as Error)));
 	}
 
@@ -57,7 +59,8 @@ const updateByPackage = async (packageName: string) => {
 
 const update = async () => {
 	if (currentBottomElement) {
-		main.removeChild(currentBottomElement);
+		currentBottomElement.remove();
+		currentBottomElement = undefined;
 	}
 	main.appendChild((currentBottomElement = createSuggestionElement()));
 
