@@ -28,6 +28,17 @@ https://npsze.netlify.app/api/v0/react@19.0.1
 https://npsze.netlify.app/api/v0/react@^19
 ```
 
+This is the result you will get:
+
+```json
+{
+	"name": "react",
+	"version": "19.3.1",
+	"unpacked": 178663,
+	"install": 178663
+}
+```
+
 ## Prior Art
 
 This project was inspired from [styfle/packagephobia](https://github.com/styfle/packagephobia) and [pastelsky/bundlephobia](https://github.com/pastelsky/bundlephobia).
