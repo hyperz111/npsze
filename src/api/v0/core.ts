@@ -4,7 +4,7 @@ import { HTTPException } from "hono/http-exception";
 import { unpackTar } from "modern-tar";
 import { findMaxSatisfying } from "verkit";
 import { shouldChange, getPackageData, setPackageData } from "#store-v0";
-import { type AnalyzeResult } from "./types.js";
+import { type AnalyzeResult, type Schema } from "./types.js";
 
 export const parsePackageName = (packageName: string): { name: string; version: string } => {
 	const atIndex = packageName.lastIndexOf("@");
@@ -39,39 +39,49 @@ interface ResponseResult {
 	>;
 }
 
+const fetchCache = new Map<string, Schema>();
+
 const fetchPackage = async (name: string, version: string): Promise<FetchResult> => {
 	if (version.startsWith("npm:")) {
 		({ name, version } = parsePackageName(version.slice(4)));
 	}
 
-	if (await shouldChange(name)) {
-		const response = await fetch(`https://registry.npmjs.org/${name}`, {
-			headers: {
-				Accept: "application/vnd.npm.install-v1+json",
-			},
-		});
+	let data: Schema;
 
-		if (!response.ok) {
-			throw new HTTPException(response.status as any, { message: response.statusText });
+	if (!fetchCache.has(name)) {
+		if (await shouldChange(name)) {
+			const response = await fetch(`https://registry.npmjs.org/${name}`, {
+				headers: {
+					Accept: "application/vnd.npm.install-v1+json",
+				},
+			});
+
+			if (!response.ok) {
+				throw new HTTPException(response.status as any, { message: response.statusText });
+			}
+
+			const responseData = (await response.json()) as ResponseResult;
+			const transformed = {
+				t: responseData["dist-tags"],
+				v: Object.fromEntries(
+					Object.entries(responseData.versions).map(([key, value]) => [
+						key,
+						{
+							p: value.dist.unpackedSize ?? value.dist.tarball,
+							...(value.dependencies ? { d: value.dependencies } : {}),
+						},
+					]),
+				),
+			};
+
+			await setPackageData(name, transformed);
+			data = transformed;
+		} else {
+			data = (await getPackageData(name))!;
 		}
-
-		const data = (await response.json()) as ResponseResult;
-
-		await setPackageData(name, {
-			t: data["dist-tags"],
-			v: Object.fromEntries(
-				Object.entries(data.versions).map(([key, value]) => [
-					key,
-					{
-						p: value.dist.unpackedSize ?? value.dist.tarball,
-						...(value.dependencies ? { d: value.dependencies } : {}),
-					},
-				]),
-			),
-		});
+	} else {
+		data = fetchCache.get(name)!;
 	}
-
-	const data = (await getPackageData(name))!;
 
 	const selectedVersion = findMaxSatisfying(Object.keys(data.v), data.t[version] ?? version);
 	if (selectedVersion === null) {
