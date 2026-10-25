@@ -75,6 +75,7 @@ const fetchPackage = async (name: string, version: string): Promise<FetchResult>
 			};
 
 			await setPackageData(name, transformed);
+			fetchCache.set(name, transformed);
 			data = transformed;
 		} else {
 			data = (await getPackageData(name))!;
@@ -95,6 +96,7 @@ const fetchPackage = async (name: string, version: string): Promise<FetchResult>
 			.then((buffer) => gunzipPromise(buffer))
 			.then((tar) => unpackTar(tar))
 			.then((entries) => entries.reduce((before, current) => before + current.header.size, 0));
+		await setPackageData(name, data);
 	}
 
 	return {
