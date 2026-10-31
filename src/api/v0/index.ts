@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { getPackageSize, parsePackageName } from "./core.js";
+import { analyzePackage, parsePackageName } from "./core.js";
 
 const app = new Hono();
 
@@ -10,7 +10,7 @@ app.get("/package/*", async (c) => {
 	const { name, version } = parsePackageName(target);
 
 	try {
-		const result = await getPackageSize(name, version);
+		const result = await analyzePackage(name, version);
 		return c.json(result);
 	} catch (error) {
 		if (error instanceof TypeError && error.message === "fetch failed") {
